@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RPC Tester – Quadrants</title>
+  <style>
+    :root { --bg:#0f1220; --card:#151933; --text:#e9ecff; --muted:#a9b2d6; --accent:#6ea8fe; --ok:#21c97a; --warn:#ffcc66; --err:#ff6b6b; }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu} 
+    h1{font-size:22px;margin:16px 12px}
+    .wrap{padding:12px;max-width:1200px;margin:0 auto}
+    .grid{display:grid;gap:12px;grid-template-columns:repeat(2,1fr)}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+    .card{background:var(--card);border:1px solid #202652;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.25);padding:14px}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    label{font-size:12px;color:var(--muted)}
+    input,select,textarea,button{border-radius:10px;border:1px solid #2a3160;background:#0e1230;color:var(--text);padding:10px}
+    input,select{width:100%}
+    button{cursor:pointer;background:linear-gradient(180deg,#2a62ff,#2749d6);border:none;padding:10px 14px}
+    button.secondary{background:#1b2147}
+    .pill{display:inline-block;font-size:12px;color:#cfe1ff;background:#1a224a;border:1px solid #2a3160;border-radius:999px;padding:4px 10px;margin-left:6px}
+    pre{background:#0b0f29;border:1px solid #202652;border-radius:12px;padding:12px;white-space:pre-wrap;max-height:310px;overflow:auto}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .hint{font-size:12px;color:var(--muted)}
+    .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+    .footer{opacity:.8;font-size:12px;margin-top:12px}
+    .tabbar{display:flex;gap:6px;margin:8px 0 12px}
+    .tabbar button{border:1px solid #2a3160}
+    .hidden{display:none}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>RPC Tester – Quadrants <span class="pill">Console-first → Commands later</span></h1>
+
+    <div class="card" id="cfg">
+      <div class="row two">
+        <div>
+          <label>RPC URL (ex.: https://…)</label>
+          <input id="rpcUrl" placeholder="https://your-rpc-endpoint" />
+        </div>
+        <div>
+          <label>Basic Auth (opcional) → user:pass</label>
+          <input id="basicAuth" placeholder="username:password (deixe vazio se não usar)" />
+        </div>
+      </div>
+      <div class="hint">Alguns endpoints podem bloquear requisições do navegador por CORS/credenciais. Se isso ocorrer, teste com <code>curl</code> no terminal usando os mesmos payloads exibidos aqui.</div>
+    </div>
+
+    <div class="tabbar">
+      <button onclick="sel('btc')">Bitcoin</button>
+      <button class="secondary" onclick="sel('eth')">Ethereum</button>
+    </div>
+
+    <!-- BITCOIN GRID -->
+    <section id="btc" class="grid">
+      <!-- 1 getbestblockhash -->
+      <div class="card">
+        <h3>1) getbestblockhash</h3>
+        <div class="row">
+          <button onclick="btc_getbestblockhash()">Enviar</button>
+          <button class="secondary" onclick="copyPayload('btc1')">Copiar JSON</button>
+        </div>
+        <pre id="btc1p"></pre>
+        <pre id="btc1"></pre>
+      </div>
+
+      <!-- 2 getblock -->
+      <div class="card">
+        <h3>2) getblock [hash, true]</h3>
+        <label>Hash do bloco</label>
+        <input id="btcBlockHash" placeholder="cole aqui o hash do passo 1" />
+        <div class="row">
+          <button onclick="btc_getblock(true)">Enviar</button>
+          <button class="secondary" onclick="copyPayload('btc2')">Copiar JSON</button>
+        </div>
+        <pre id="btc2p"></pre>
+        <pre id="btc2"></pre>
+      </div>
+
+      <!-- 3 getblockcount -->
+      <div class="card">
+        <h3>3) getblockcount</h3>
+        <div class="row">
+          <button onclick="btc_getblockcount()">Enviar</button>
+          <button class="secondary" onclick="copyPayload('btc3')">Copiar JSON</button>
+        </div>
+        <pre id="btc3p"></pre>
+        <pre id="btc3"></pre>
+      </div>
+
+      <!-- 4 getrawtransaction -->
+      <div class="card">
+        <h3>4) getrawtransaction [txid, true]</h3>
+        <label>TXID</label>
+        <input id="btcTxid" placeholder="cole aqui um txid do passo 2 (campo tx[])" />
+        <div class="row">
+          <button onclick="btc_getrawtransaction(true)">Enviar</button>
+          <button class="secondary" onclick="copyPayload('btc4')">Copiar JSON</button>
+        </div>
+        <pre id="btc4p"></pre>
+        <pre id="btc4"></pre>
+      </div>
+    </section>
+
+    <!-- ETH GRID -->
+    <section id="eth" class="grid hidden">
+      <div class="card">
+        <h3>eth_blockNumber</h3>
+        <div class="row">
+          <button onclick="eth_blockNumber()">Enviar</button>
+          <button class="secondary" onclick="copyPayload('eth1')">Copiar JSON</button>
+        </div>
+        <pre id="eth1p"></pre>
+        <pre id="eth1"></pre>
+      </div>
+
+      <div class="card">
+        <h3>eth_getBlockByNumber [hex, true]</h3>
+        <label>Altura (hex) — ex.: 0x10</label>
+        <input id="ethBlockN" placeholder="0x…" />
+        <div class="row">
+          <button onclick="eth_getBlockByNumber(true)">Enviar</button>
+          <button class="secondary" onclick="copyPayload('eth2')">Copiar JSON</button>
+        </div>
+        <pre id="eth2p"></pre>
+        <pre id="eth2"></pre>
+      </div>
+
+      <div class="card">
+        <h3>eth_getBalance [address, latest]</h3>
+        <label>Address</label>
+        <input id="ethAddr" placeholder="0x…" />
+        <div class="row">
+          <button onclick="eth_getBalance()">Enviar</button>
+          <button class="secondary" onclick="copyPayload('eth3')">Copiar JSON</button>
+        </div>
+        <pre id="eth3p"></pre>
+        <pre id="eth3"></pre>
+      </div>
+
+      <div class="card">
+        <h3>eth_chainId</h3>
+        <div class="row">
+          <button onclick="eth_chainId()">Enviar</button>
+          <button class="secondary" onclick="copyPayload('eth4')">Copiar JSON</button>
+        </div>
+        <pre id="eth4p"></pre>
+        <pre id="eth4"></pre>
+      </div>
+    </section>
+
+    <div class="footer hint">Segurança: não cole chaves privadas aqui. Endpoints podem exigir CORS; se falhar no navegador, use os payloads copiados com <code>curl</code> no terminal.</div>
+  </div>
+
+<script>
+const $ = (id)=>document.getElementById(id);
+const sel = (which)=>{
+  $('btc').classList.toggle('hidden', which!=='btc');
+  $('eth').classList.toggle('hidden', which!=='eth');
+};
+
+async function rpcCall(payload, outId){
+  const url = $('rpcUrl').value.trim();
+  if(!url){ $(outId).textContent = '⚠️ Informe a RPC URL primeiro.'; return; }
+  const basic = $('basicAuth').value.trim();
+  const headers = { 'Content-Type':'application/json' };
+  if(basic){ headers['Authorization'] = 'Basic '+ btoa(basic); }
+  try{
+    const res = await fetch(url,{ method:'POST', headers, body: JSON.stringify(payload)});
+    const txt = await res.text();
+    $(outId).textContent = txt;
+  }catch(e){
+    $(outId).textContent = 'Erro: '+ e.message + '\nPossível CORS/bloqueio no endpoint. Use o JSON (botão Copiar) com curl.';
+  }
+}
+
+function showPayload(targetId, payload){
+  $(targetId).textContent = JSON.stringify(payload, null, 2);
+}
+function copyPayload(areaId){
+  const pre = $(areaId+'p');
+  navigator.clipboard.writeText(pre.textContent).then(()=>{
+    pre.textContent = pre.textContent + "\n\n✅ Copiado para a área de transferência.";
+  });
+}
+
+// --------- BITCOIN ---------
+function btc_getbestblockhash(){
+  const payload = { jsonrpc:"1.0", id:"web", method:"getbestblockhash", params:[] };
+  showPayload('btc1p', payload); rpcCall(payload,'btc1');
+}
+function btc_getblock(full){
+  const h = $('btcBlockHash').value.trim();
+  const payload = { jsonrpc:"1.0", id:"web", method:"getblock", params:[h, !!full] };
+  showPayload('btc2p', payload); rpcCall(payload,'btc2');
+}
+function btc_getblockcount(){
+  const payload = { jsonrpc:"1.0", id:"web", method:"getblockcount", params:[] };
+  showPayload('btc3p', payload); rpcCall(payload,'btc3');
+}
+function btc_getrawtransaction(full){
+  const tx = $('btcTxid').value.trim();
+  const payload = { jsonrpc:"1.0", id:"web", method:"getrawtransaction", params:[tx, !!full] };
+  showPayload('btc4p', payload); rpcCall(payload,'btc4');
+}
+
+// --------- ETHEREUM ---------
+function eth_blockNumber(){
+  const payload = { jsonrpc:"2.0", id:1, method:"eth_blockNumber", params:[] };
+  showPayload('eth1p', payload); rpcCall(payload,'eth1');
+}
+function eth_getBlockByNumber(full){
+  const n = $('ethBlockN').value.trim() || 'latest';
+  const payload = { jsonrpc:"2.0", id:1, method:"eth_getBlockByNumber", params:[n, !!full] };
+  showPayload('eth2p', payload); rpcCall(payload,'eth2');
+}
+function eth_getBalance(){
+  const a = $('ethAddr').value.trim();
+  const payload = { jsonrpc:"2.0", id:1, method:"eth_getBalance", params:[a, 'latest'] };
+  showPayload('eth3p', payload); rpcCall(payload,'eth3');
+}
+function eth_chainId(){
+  const payload = { jsonrpc:"2.0", id:1, method:"eth_chainId", params:[] };
+  showPayload('eth4p', payload); rpcCall(payload,'eth4');
+}
+</script>
+</body>
+</html>
