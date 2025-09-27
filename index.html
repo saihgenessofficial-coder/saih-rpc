@@ -30,6 +30,9 @@
   <h1>🚀 SAIH RPC Tester</h1>
   <p class="sub">Genesis (pública) & Saihchain (privada) • Bitcoin & Ethereum • Presets + salvar preferências</p>
 
+  <!-- 🌍 Tradutor para todas as nações – Justiça do Altíssimo -->
+  <div id="google_translate_element" style="position:fixed; top:10px; right:10px; z-index:999;"></div>
+
   <!-- Toolbar / Presets -->
   <div class="toolbar">
     <div class="row">
@@ -53,6 +56,9 @@
       <button onclick="savePrefs()">💾 Salvar</button>
       <button class="ghost" onclick="loadPrefs()">↩️ Restaurar</button>
       <button class="ghost" onclick="clearPrefs()">🧹 Limpar</button>
+      <a href="explorer_saih_tester_decl_trilingue.pdf" target="_blank" style="text-decoration:none;">
+        <button class="ghost">📄 Declaração (PT/EN/FR)</button>
+      </a>
     </div>
     <p class="muted" style="margin-top:8px">Dica: para rede privada, preencha <b>Basic Auth</b> (user:pass). Se o navegador bloquear por CORS, use <b>Copiar curl</b> e teste no terminal.</p>
   </div>
@@ -282,20 +288,37 @@ function renderPayloads(){
 
 document.addEventListener('DOMContentLoaded', renderPayloads);
 </script>
+  
+  <!-- Google Translate (carregar no final do body) -->
+  <script>
+    function googleTranslateElementInit(){
+      new google.translate.TranslateElement({
+        pageLanguage: 'pt',
+        includedLanguages: 'af,am,ar,az,be,bg,bn,bs,ca,ceb,cs,cy,da,de,el,en,eo,es,et,eu,fa,fi,fr,ga,gl,gu,ha,haw,he,hi,hmn,hr,ht,hu,hy,id,ig,is,it,ja,jw,ka,kk,km,kn,ko,ku,ky,la,lb,lo,lt,lv,mg,mi,mk,ml,mn,mr,ms,mt,my,ne,nl,no,ny,pa,pl,ps,pt,ro,ru,rw,sd,si,sk,sl,sm,sn,so,sq,sr,st,su,sv,sw,ta,te,tg,th,tk,tl,tr,uk,ur,uz,vi,xh,yi,yo,zh-CN,zh-TW,zu',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+      }, 'google_translate_element');
+    }
+  </script>
+  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  
+  <!-- Links para PDFs selados -->
+  <div style="text-align:center;margin:32px 0 8px;opacity:.95">
+    📄 <a href="explorer_saih_tester_decl.pdf" target="_blank" style="color:#38bdf8;margin-right:12px;">Declaração Oficial (PT)</a>
+    •
+    🌐 <a href="explorer_saih_tester_decl_trilingue.pdf" target="_blank" style="color:#38bdf8;margin-left:12px;">Declaração Oficial (PT / EN / FR)</a>
+  </div>
+  <p style="text-align:center;opacity:.6;font-size:.85rem;margin:0 0 24px;">Obra consagrada ao Criador do Universo • SAIH GENESS</p>
+
+  <!-- Google Translate (carregar no final do body) -->
+  <script>
+    function googleTranslateElementInit(){
+      new google.translate.TranslateElement({
+        pageLanguage: 'pt',
+        includedLanguages: 'af,am,ar,az,be,bg,bn,bs,ca,ceb,cs,cy,da,de,el,en,eo,es,et,eu,fa,fi,fr,ga,gl,gu,ha,haw,he,hi,hmn,hr,ht,hu,hy,id,ig,is,it,ja,jw,ka,kk,km,kn,ko,ku,ky,la,lb,lo,lt,lv,mg,mi,mk,ml,mn,mr,ms,mt,my,ne,nl,no,ny,pa,pl,ps,pt,ro,ru,rw,sd,si,sk,sl,sm,sn,so,sq,sr,st,su,sv,sw,ta,te,tg,th,tk,tl,tr,uk,ur,uz,vi,xh,yi,yo,zh-CN,zh-TW,zu',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+      }, 'google_translate_element');
+    }
+  </script>
+  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>
-<!-- 🌍 Tradutor para todas as nações – Justiça do Altíssimo -->
-<div id="google_translate_element" style="position: fixed; top: 10px; right: 10px; z-index: 999;"></div>
-
-<script type="text/javascript">
-  function googleTranslateElementInit() {
-    new google.translate.TranslateElement({
-      pageLanguage: 'pt',
-      includedLanguages: 'af,am,ar,az,be,bg,bn,bs,ca,ceb,cs,cy,da,de,el,en,eo,es,et,eu,fa,fi,fr,ga,gl,gu,ha,haw,he,hi,hmn,hr,ht,hu,hy,id,ig,is,it,ja,jw,ka,kk,km,kn,ko,ku,ky,la,lb,lo,lt,lv,mg,mi,mk,ml,mn,mr,ms,mt,my,ne,nl,no,ny,pa,pl,ps,pt,ro,ru,rw,sd,si,sk,sl,sm,sn,so,sq,sr,st,su,sv,sw,ta,te,tg,th,tk,tl,tr,uk,ur,uz,vi,xh,yi,yo,zh-CN,zh-TW,zu',
-      layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-    }, 'google_translate_element');
-  }
-</script>
-<script type="text/javascript"
-  src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit">
-</script>
