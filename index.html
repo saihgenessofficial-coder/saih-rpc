@@ -3,100 +3,285 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SAIH RPC Tester Avançado</title>
+  <title>SAIH RPC Tester – Completo (Genesis & Saihchain)</title>
   <style>
-    body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 20px; }
-    h1 { text-align: center; color: #38bdf8; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-top: 20px; }
-    .card { background: #1e293b; border-radius: 12px; padding: 16px; box-shadow: 0 4px 8px rgba(0,0,0,.4); }
-    pre { background: #0f172a; padding: 8px; border-radius: 8px; overflow-x: auto; font-size: 0.85rem; }
-    input, button { padding: 8px; margin-top: 6px; border-radius: 6px; border: none; }
-    input { width: 100%; margin-bottom: 10px; }
-    button { cursor: pointer; background: #38bdf8; color: #0f172a; font-weight: bold; }
-    .result { background: #0f172a; margin-top: 10px; padding: 10px; border-radius: 8px; max-height: 250px; overflow-y: auto; }
+    :root{--bg:#0f172a;--panel:#111827;--card:#1f2937;--accent:#38bdf8;--muted:#94a3b8}
+    *{box-sizing:border-box}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;background:var(--bg);color:#e5e7eb;margin:0;padding:24px}
+    h1{margin:0 0 12px;text-align:center;color:var(--accent)}
+    .sub{opacity:.85;text-align:center;margin-bottom:18px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;margin-top:16px}
+    .card{background:var(--card);border:1px solid #0b1220;border-radius:12px;padding:16px;box-shadow:0 10px 20px rgba(0,0,0,.25)}
+    .toolbar{background:var(--panel);border:1px solid #0b1220;border-radius:12px;padding:16px;margin:0 0 16px}
+    label{display:block;font-size:.9rem;color:var(--muted);margin:6px 0 4px}
+    input,select,button{padding:10px;border-radius:8px;border:1px solid #0b1220;background:#0b1220;color:#e5e7eb}
+    input,select{width:100%}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    .row > *{flex:1 1 220px}
+    button{cursor:pointer;background:var(--accent);color:#062436;border:none;font-weight:700}
+    button.ghost{background:#0b1220;color:#e5e7eb;border:1px solid #1f2a3d}
+    pre{background:#0b1220;border:1px solid #1f2a3d;border-radius:8px;padding:10px;overflow:auto;font-size:.85rem}
+    .result{background:#0b1220;border:1px solid #1f2a3d;border-radius:8px;margin-top:8px;max-height:260px;overflow:auto;padding:10px}
+    .muted{color:var(--muted);font-size:.85rem}
+    .tag{display:inline-block;background:#0b1220;border:1px solid #1f2a3d;color:#cbd5e1;padding:2px 8px;border-radius:999px;font-size:.75rem;margin-right:6px}
   </style>
 </head>
 <body>
-  <h1>🚀 SAIH RPC Tester Avançado</h1>
-  
-  <label>🌐 RPC URL:
-    <input id="rpcUrl" placeholder="cole aqui sua URL RPC" />
-  </label>
-  <label>🔑 Basic Auth (user:password opcional):
-    <input id="auth" placeholder="usuario:senha" />
-  </label>
+  <h1>🚀 SAIH RPC Tester</h1>
+  <p class="sub">Genesis (pública) & Saihchain (privada) • Bitcoin & Ethereum • Presets + salvar preferências</p>
+
+  <!-- Toolbar / Presets -->
+  <div class="toolbar">
+    <div class="row">
+      <div>
+        <label>🌐 RPC URL</label>
+        <input id="rpcUrl" placeholder="ex.: https://genesis.saihgeness.com/eth"/>
+      </div>
+      <div>
+        <label>🔑 Basic Auth (user:password – só se precisar)</label>
+        <input id="auth" placeholder="usuario:senha"/>
+      </div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <select id="preset" onchange="applyPreset()" title="Escolha um endpoint pronto">
+        <option value="">— escolher preset —</option>
+        <option value="genesis-eth">Genesis (Pública) — ETH</option>
+        <option value="genesis-btc">Genesis (Pública) — BTC</option>
+        <option value="saihchain-eth">Saihchain (Privada) — ETH</option>
+        <option value="saihchain-btc">Saihchain (Privada) — BTC</option>
+      </select>
+      <button onclick="savePrefs()">💾 Salvar</button>
+      <button class="ghost" onclick="loadPrefs()">↩️ Restaurar</button>
+      <button class="ghost" onclick="clearPrefs()">🧹 Limpar</button>
+    </div>
+    <p class="muted" style="margin-top:8px">Dica: para rede privada, preencha <b>Basic Auth</b> (user:pass). Se o navegador bloquear por CORS, use <b>Copiar curl</b> e teste no terminal.</p>
+  </div>
 
   <div class="grid">
-    <!-- Exemplo Ethereum -->
+    <!-- ============ ETH CARDS ============ -->
     <div class="card">
-      <h3>Ethereum → eth_blockNumber</h3>
-      <pre id="payload-eth-blockNumber">{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}</pre>
-      <button onclick="sendRpc('eth_blockNumber')">Enviar</button>
-      <button onclick="copyCurl('eth_blockNumber')">Copiar curl</button>
-      <div class="result" id="res-eth-blockNumber"></div>
+      <div class="tag">Ethereum</div>
+      <h3 style="margin:8px 0 6px">eth_blockNumber</h3>
+      <pre id="payload-eth_blockNumber"></pre>
+      <div class="row">
+        <button onclick="sendRpc('eth_blockNumber')">Enviar</button>
+        <button class="ghost" onclick="copyCurl('eth_blockNumber')">Copiar curl</button>
+      </div>
+      <div class="result" id="res-eth_blockNumber"></div>
     </div>
 
     <div class="card">
-      <h3>Ethereum → eth_chainId</h3>
-      <pre id="payload-eth-chainId">{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}</pre>
-      <button onclick="sendRpc('eth_chainId')">Enviar</button>
-      <button onclick="copyCurl('eth_chainId')">Copiar curl</button>
-      <div class="result" id="res-eth-chainId"></div>
-    </div>
-
-    <!-- Exemplo Bitcoin -->
-    <div class="card">
-      <h3>Bitcoin → getblockcount</h3>
-      <pre id="payload-btc-blockcount">{"jsonrpc":"1.0","id":"rpc","method":"getblockcount","params":[]}</pre>
-      <button onclick="sendRpc('btc-blockcount')">Enviar</button>
-      <button onclick="copyCurl('btc-blockcount')">Copiar curl</button>
-      <div class="result" id="res-btc-blockcount"></div>
+      <div class="tag">Ethereum</div>
+      <h3 style="margin:8px 0 6px">eth_chainId</h3>
+      <pre id="payload-eth_chainId"></pre>
+      <div class="row">
+        <button onclick="sendRpc('eth_chainId')">Enviar</button>
+        <button class="ghost" onclick="copyCurl('eth_chainId')">Copiar curl</button>
+      </div>
+      <div class="result" id="res-eth_chainId"></div>
     </div>
 
     <div class="card">
-      <h3>Bitcoin → getbestblockhash</h3>
-      <pre id="payload-btc-besthash">{"jsonrpc":"1.0","id":"rpc","method":"getbestblockhash","params":[]}</pre>
-      <button onclick="sendRpc('btc-besthash')">Enviar</button>
-      <button onclick="copyCurl('btc-besthash')">Copiar curl</button>
-      <div class="result" id="res-btc-besthash"></div>
+      <div class="tag">Ethereum</div>
+      <h3 style="margin:8px 0 6px">eth_getBlockByNumber</h3>
+      <label>Número do bloco (hex ou palavras-chave: latest|earliest|pending)</label>
+      <input id="eth_blocknum" placeholder="ex.: latest ou 0x10FB78"/>
+      <pre id="payload-eth_getBlockByNumber"></pre>
+      <div class="row">
+        <button onclick="sendRpc('eth_getBlockByNumber')">Enviar</button>
+        <button class="ghost" onclick="copyCurl('eth_getBlockByNumber')">Copiar curl</button>
+      </div>
+      <div class="result" id="res-eth_getBlockByNumber"></div>
+    </div>
+
+    <div class="card">
+      <div class="tag">Ethereum</div>
+      <h3 style="margin:8px 0 6px">eth_getBalance</h3>
+      <label>Endereço</label>
+      <input id="eth_address" placeholder="0x..."/>
+      <label>Bloco (latest por padrão)</label>
+      <input id="eth_balance_block" placeholder="latest (ou 0xHEX)"/>
+      <pre id="payload-eth_getBalance"></pre>
+      <div class="row">
+        <button onclick="sendRpc('eth_getBalance')">Enviar</button>
+        <button class="ghost" onclick="copyCurl('eth_getBalance')">Copiar curl</button>
+      </div>
+      <div class="result" id="res-eth_getBalance"></div>
+    </div>
+
+    <!-- ============ BTC CARDS ============ -->
+    <div class="card">
+      <div class="tag">Bitcoin</div>
+      <h3 style="margin:8px 0 6px">getblockcount</h3>
+      <pre id="payload-btc_getblockcount"></pre>
+      <div class="row">
+        <button onclick="sendRpc('btc_getblockcount')">Enviar</button>
+        <button class="ghost" onclick="copyCurl('btc_getblockcount')">Copiar curl</button>
+      </div>
+      <div class="result" id="res-btc_getblockcount"></div>
+    </div>
+
+    <div class="card">
+      <div class="tag">Bitcoin</div>
+      <h3 style="margin:8px 0 6px">getbestblockhash</h3>
+      <pre id="payload-btc_getbestblockhash"></pre>
+      <div class="row">
+        <button onclick="sendRpc('btc_getbestblockhash')">Enviar</button>
+        <button class="ghost" onclick="copyCurl('btc_getbestblockhash')">Copiar curl</button>
+      </div>
+      <div class="result" id="res-btc_getbestblockhash"></div>
+    </div>
+
+    <div class="card">
+      <div class="tag">Bitcoin</div>
+      <h3 style="margin:8px 0 6px">getblock</h3>
+      <label>Block hash</label>
+      <input id="btc_blockhash" placeholder="000000..."/>
+      <pre id="payload-btc_getblock"></pre>
+      <div class="row">
+        <button onclick="sendRpc('btc_getblock')">Enviar</button>
+        <button class="ghost" onclick="copyCurl('btc_getblock')">Copiar curl</button>
+      </div>
+      <div class="result" id="res-btc_getblock"></div>
+    </div>
+
+    <div class="card">
+      <div class="tag">Bitcoin</div>
+      <h3 style="margin:8px 0 6px">getrawtransaction</h3>
+      <label>TXID</label>
+      <input id="btc_txid" placeholder="txid..."/>
+      <pre id="payload-btc_getrawtransaction"></pre>
+      <div class="row">
+        <button onclick="sendRpc('btc_getrawtransaction')">Enviar</button>
+        <button class="ghost" onclick="copyCurl('btc_getrawtransaction')">Copiar curl</button>
+      </div>
+      <div class="result" id="res-btc_getrawtransaction"></div>
     </div>
   </div>
 
 <script>
+/* ======= PRESETS ======= */
+const PRESETS = {
+  "genesis-eth":   "https://genesis.saihgeness.com/eth",
+  "genesis-btc":   "https://genesis.saihgeness.com/btc",
+  "saihchain-eth": "https://saihchain.saihgeness.com/eth",
+  "saihchain-btc": "https://saihchain.saihgeness.com/btc"
+};
+
+function applyPreset(){
+  const p = document.getElementById('preset').value;
+  if(!p) return;
+  document.getElementById('rpcUrl').value = PRESETS[p] || "";
+  if(p.startsWith('saihchain')) document.getElementById('auth').focus();
+  renderPayloads();
+  savePrefs();
+}
+
+/* ======= Preferences (localStorage) ======= */
+function savePrefs(){
+  localStorage.setItem('saih_rpc_url',  document.getElementById('rpcUrl').value.trim());
+  localStorage.setItem('saih_rpc_auth', document.getElementById('auth').value.trim());
+}
+function loadPrefs(){
+  document.getElementById('rpcUrl').value  = localStorage.getItem('saih_rpc_url')  || "";
+  document.getElementById('auth').value    = localStorage.getItem('saih_rpc_auth') || "";
+  renderPayloads();
+}
+function clearPrefs(){
+  localStorage.removeItem('saih_rpc_url');
+  localStorage.removeItem('saih_rpc_auth');
+  document.getElementById('rpcUrl').value = "";
+  document.getElementById('auth').value   = "";
+  renderPayloads();
+}
+
+document.addEventListener('DOMContentLoaded', loadPrefs);
+
+/* ======= Build payloads dinamicamente ======= */
+function hexOrLatest(v){
+  const t = (v||'').trim();
+  return t ? t : 'latest';
+}
+
+function buildPayload(key){
+  switch(key){
+    // ETH
+    case 'eth_blockNumber':
+      return {jsonrpc:'2.0',method:'eth_blockNumber',params:[],id:1};
+    case 'eth_chainId':
+      return {jsonrpc:'2.0',method:'eth_chainId',params:[],id:1};
+    case 'eth_getBlockByNumber':{
+      const num = hexOrLatest(document.getElementById('eth_blocknum').value);
+      return {jsonrpc:'2.0',method:'eth_getBlockByNumber',params:[num,true],id:1};
+    }
+    case 'eth_getBalance':{
+      const addr = document.getElementById('eth_address').value.trim();
+      const blk  = hexOrLatest(document.getElementById('eth_balance_block').value||'latest');
+      return {jsonrpc:'2.0',method:'eth_getBalance',params:[addr, blk],id:1};
+    }
+
+    // BTC
+    case 'btc_getblockcount':
+      return {jsonrpc:'1.0',id:'web',method:'getblockcount',params:[]};
+    case 'btc_getbestblockhash':
+      return {jsonrpc:'1.0',id:'web',method:'getbestblockhash',params:[]};
+    case 'btc_getblock':{
+      const h = document.getElementById('btc_blockhash').value.trim();
+      return {jsonrpc:'1.0',id:'web',method:'getblock',params:[h,2]};
+    }
+    case 'btc_getrawtransaction':{
+      const tx = document.getElementById('btc_txid').value.trim();
+      return {jsonrpc:'1.0',id:'web',method:'getrawtransaction',params:[tx,true]};
+    }
+  }
+}
+
 function getAuthHeader(){
-  const auth = document.getElementById('auth').value.trim();
-  if(!auth) return {};
-  return { 'Authorization': 'Basic ' + btoa(auth) };
+  const a = document.getElementById('auth').value.trim();
+  return a ? { 'Authorization': 'Basic ' + btoa(a) } : {};
 }
 
 function sendRpc(key){
   const url = document.getElementById('rpcUrl').value.trim();
-  if(!url){ alert('Preencha a RPC URL primeiro!'); return; }
-  const payload = document.getElementById('payload-'+key).textContent;
-  fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
-    body: payload
-  }).then(r=>r.json()).then(data=>{
-    document.getElementById('res-'+key).textContent = JSON.stringify(data,null,2);
+  if(!url){ alert('Preencha a RPC URL primeiro.'); return; }
+  const payload = buildPayload(key);
+  // refletir payload nos <pre>
+  const pre = document.getElementById('payload-'+key.replace(/\./g,'_'));
+  if(pre) pre.textContent = JSON.stringify(payload,null,2);
+
+  fetch(url,{
+    method:'POST',
+    headers:{'Content-Type':'application/json', ...getAuthHeader()},
+    body: JSON.stringify(payload)
+  }).then(async r=>{
+    let txt = await r.text();
+    try{ const j = JSON.parse(txt); txt = JSON.stringify(j,null,2);}catch(e){}
+    document.getElementById('res-'+key.replace(/\./g,'_')).textContent = txt;
   }).catch(err=>{
-    document.getElementById('res-'+key).textContent = 'Erro: '+err;
+    document.getElementById('res-'+key.replace(/\./g,'_')).textContent = 'Erro: '+err;
   });
 }
 
 function copyCurl(key){
-  const url = document.getElementById('rpcUrl').value.trim() || '<COLOQUE-SUA-RPC>'; 
-  const payload = document.getElementById('payload-'+key).textContent;
+  const url = document.getElementById('rpcUrl').value.trim() || '<COLOQUE-SUA-RPC>';
   const auth = document.getElementById('auth').value.trim();
-  let curl = `curl -X POST ${url} -H 'Content-Type: application/json' -d '${payload}'`;
-  if(auth){
-    curl = `curl -u ${auth} -X POST ${url} -H 'Content-Type: application/json' -d '${payload}'`;
-  }
+  const payload = buildPayload(key);
+  let curl = `curl -X POST ${url} -H 'Content-Type: application/json' -d '${JSON.stringify(payload)}'`;
+  if(auth){ curl = `curl -u ${auth} -X POST ${url} -H 'Content-Type: application/json' -d '${JSON.stringify(payload)}'`; }
   navigator.clipboard.writeText(curl);
   alert('Comando curl copiado!');
 }
-</script>
 
+function renderPayloads(){
+  const keys = ['eth_blockNumber','eth_chainId','eth_getBlockByNumber','eth_getBalance','btc_getblockcount','btc_getbestblockhash','btc_getblock','btc_getrawtransaction'];
+  keys.forEach(k=>{
+    const pre = document.getElementById('payload-'+k.replace(/\./g,'_'));
+    if(pre){ pre.textContent = JSON.stringify(buildPayload(k),null,2); }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', renderPayloads);
+</script>
 </body>
 </html>
 <!-- 🌍 Tradutor para todas as nações – Justiça do Altíssimo -->
