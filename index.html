@@ -1,342 +1,673 @@
-<!doctype html>
-<html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SAIH RPC Tester – Completo (Genesis & Saihchain)</title>
+  <meta charset="UTF-8" />
+  <title>Obra SAIH GENESS — Banco BANTU (acesso)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#ffe600" />
+  <!-- CSP básica: ajuste domínios conforme necessário -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' https://translate.google.com https://translate.googleapis.com 'unsafe-inline'; connect-src 'self' https://us-east-2izvc7suha.auth.us-east-2.amazoncognito.com; frame-src https://translate.google.com;" />
+  <!-- Performance: preconnect no domínio do Cognito correto -->
+  <link rel="preconnect" href="https://us-east-2izvc7suha.auth.us-east-2.amazoncognito.com" crossorigin />
   <style>
-    :root{--bg:#0f172a;--panel:#111827;--card:#1f2937;--accent:#38bdf8;--muted:#94a3b8}
-    *{box-sizing:border-box}
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;background:var(--bg);color:#e5e7eb;margin:0;padding:24px}
-    h1{margin:0 0 12px;text-align:center;color:var(--accent)}
-    .sub{opacity:.85;text-align:center;margin-bottom:18px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;margin-top:16px}
-    .card{background:var(--card);border:1px solid #0b1220;border-radius:12px;padding:16px;box-shadow:0 10px 20px rgba(0,0,0,.25)}
-    .toolbar{background:var(--panel);border:1px solid #0b1220;border-radius:12px;padding:16px;margin:0 0 16px}
-    label{display:block;font-size:.9rem;color:var(--muted);margin:6px 0 4px}
-    input,select,button{padding:10px;border-radius:8px;border:1px solid #0b1220;background:#0b1220;color:#e5e7eb}
-    input,select{width:100%}
-    .row{display:flex;gap:8px;flex-wrap:wrap}
-    .row > *{flex:1 1 220px}
-    button{cursor:pointer;background:var(--accent);color:#062436;border:none;font-weight:700}
-    button.ghost{background:#0b1220;color:#e5e7eb;border:1px solid #1f2a3d}
-    pre{background:#0b1220;border:1px solid #1f2a3d;border-radius:8px;padding:10px;overflow:auto;font-size:.85rem}
-    .result{background:#0b1220;border:1px solid #1f2a3d;border-radius:8px;margin-top:8px;max-height:260px;overflow:auto;padding:10px}
-    .muted{color:var(--muted);font-size:.85rem}
-    .tag{display:inline-block;background:#0b1220;border:1px solid #1f2a3d;color:#cbd5e1;padding:2px 8px;border-radius:999px;font-size:.75rem;margin-right:6px}
+  :root{
+    --bg:#fff9e5; --brand:#ffe600; --ink:#3b2400; --muted:#6b4e00;
+    --line:#ffe39a; --panel:#fffdfa; --card:#fffbea; --hover:#fff6cc;
+    --radius:12px; --shadow:0 2px 6px rgba(0,0,0,.06);
+  }
+  html{scroll-behavior:smooth}
+  body{font-family:Arial, sans-serif; background:var(--bg); margin:0}
+  header{background:var(--brand); padding:20px; text-align:center}
+  header h1{margin:0; font-size:26px; color:var(--ink)}
+  header p{margin:5px 0 0; font-style:italic; color:var(--muted)}
+  footer{text-align:center; padding:10px; font-size:13px; color:#555; background:#fff8dc}
+
+  .sr-only{
+    position:absolute !important; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+  }
+
+  /* ===== A11y e mobile refinements ===== */
+  .menu-item:focus, .menu-panel a:focus, .inv-btn:focus, .card-link:focus {
+    outline: 2px solid #0ea5e9; outline-offset: 2px;
+  }
+  .menu-panel{ -webkit-overflow-scrolling: touch; }
+  @media (prefers-reduced-motion: reduce){
+    .menu-item, .inv-btn, .card-link, .banner-profetico .msg span{ transition: none !important; }
+  }
+
+  /* ===== MENU QUADRANTES ===== */
+  .menu-bar{
+    display:flex; flex-wrap:wrap; justify-content:center; gap:10px;
+    background:#fff2cc; padding:10px; border-bottom:1px solid var(--line);
+  }
+  .menu-item{
+    position:relative; display:inline-flex; align-items:center; gap:8px;
+    padding:8px 12px; border-radius:var(--radius);
+    background:#fff; color:var(--ink); font-weight:bold; text-decoration:none;
+    border:1px solid var(--line); box-shadow:var(--shadow);
+    transition:.15s ease;
+  }
+  .menu-item:hover{ background:var(--hover); transform:translateY(-1px) }
+
+  .menu-dropdown{ position:relative }
+  .menu-dropdown > .menu-item::after{ content:"▾"; font-size:12px; opacity:.8 }
+
+  .menu-panel{
+    position:absolute; top:calc(100% + 8px); left:0; min-width:280px; max-width:92vw;
+    background:#fff; border:1px solid var(--line); border-radius:var(--radius);
+    box-shadow:0 18px 60px rgba(0,0,0,.15); padding:8px; display:none; z-index:50;
+    max-height:60vh; overflow:auto; scrollbar-width:thin; scrollbar-color:#cdb46a transparent;
+  }
+  .menu-panel a{
+    display:block; color:var(--ink); text-decoration:none; padding:10px; border-radius:10px;
+  }
+  .menu-panel a:hover{ background:var(--hover) }
+  .menu-label{ margin:6px 8px 4px; font-size:12px; color:var(--muted); text-transform:uppercase }
+
+  .menu-dropdown.open > .menu-panel{ display:block }
+
+  /* ===== Seções ===== */
+  .destacado{ background:#002d29; color:#fff; padding:20px; text-align:center }
+  .destacado h2{ margin:0 }
+  .destacado p{ font-style:italic; color:#ccf2f0 }
+  .destacado a{ display:inline-block; margin-top:10px; text-decoration:none; color:#ffe600; font-weight:bold }
+
+  .sec-pesquisas{ background:#fff6cc; border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:14px 10px }
+  .sec-pesquisas h2{ margin:4px auto 0; text-align:center; color:var(--ink); font-size:20px }
+  .sec-pesquisas .cards{ max-width:1100px; margin:10px auto 0; display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .sec-pesquisas .card-link{
+    display:flex; align-items:center; justify-content:center; text-decoration:none; background:#fff; color:var(--ink);
+    border:1px solid var(--line); border-radius:10px; padding:10px; font-weight:bold; box-shadow:var(--shadow);
+  }
+  .sec-pesquisas .card-link:hover{ background:#fff3b0 }
+
+  /* ===== Dock (barra inferior) ===== */
+  .dock{
+    position: sticky; bottom: 0; left: 0; right: 0;
+    display: flex; justify-content: center; gap: 0;
+    background: var(--panel); border-top: 1px solid var(--line); padding: 6px 8px; z-index: 999;
+    padding-bottom: calc(6px + env(safe-area-inset-bottom));
+  }
+  .dock-item{
+    display:inline-flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:2px; min-width:72px; min-height:54px; text-decoration:none; background:#fff; border:1px solid var(--line);
+    border-right-width:0; color:var(--ink); font-weight:bold; padding:8px;
+  }
+  .dock-item:first-child{ border-top-left-radius:var(--radius); border-bottom-left-radius:var(--radius) }
+  .dock-item:last-child{ border-top-right-radius:var(--radius); border-bottom-right-radius:var(--radius); border-right-width:1px }
+  .dock-item:hover{ background:var(--hover) }
+  .dock-item .ico{ font-size:20px; line-height:1 }
+  .dock-item .tx{ font-size:12px }
+  @media (max-width:560px){ .dock-item{ min-width:64px; padding:6px; min-height:50px } .dock-item .tx{ font-size:11px } }
+
+  /* ===== Login/Auth Widget ===== */
+  .auth-widget{
+    position:fixed; top:10px; left:10px; background:#fff; border:1px solid var(--line);
+    padding:6px 8px; border-radius:8px; z-index:1001; box-shadow:var(--shadow)
+  }
+  .auth-widget .state{ font-size:12px; color:var(--muted); margin-bottom:4px }
+  .auth-widget .btn{
+    font-size:12px; padding:6px 8px; border-radius:8px; border:1px solid var(--ink);
+    background:var(--ink); color:#fff; cursor:pointer; margin-right:6px
+  }
+  .auth-widget .btn.secondary{ background:#fff; color:var(--ink) }
+
+  /* ===== Investidores (hero curto) ===== */
+  .invest-hero{
+    background: radial-gradient(1200px 400px at 10% -20%, #ffe60055 0%, transparent 60%),
+                linear-gradient(180deg, #101820 0%, #0b1517 100%);
+    color:#ffeeb0; padding:28px 14px; border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+  }
+  .invest-hero .inv-wrap{ max-width:1100px; margin:0 auto; display:grid; gap:16px; grid-template-columns: 1.2fr .8fr; }
+  @media (max-width:900px){ .invest-hero .inv-wrap{ grid-template-columns:1fr } }
+  .invest-hero h2{ margin:0 0 8px; font-size:28px; color:#fff3c2 }
+  .invest-hero p{ margin:0 0 12px; color:#f6f0d7 }
+  .inv-ctas{ display:flex; gap:10px; flex-wrap:wrap }
+  .inv-btn{
+    display:inline-block; padding:10px 14px; border-radius:10px; text-decoration:none; font-weight:bold;
+    background:#19242a; color:#ffeeb0; border:1px solid #3a4750
+  }
+  .inv-btn:hover{ background:#233037 }
+  .inv-btn.primary{ background:#ffd700; color:#111; border-color:#ffd700; box-shadow:0 8px 24px rgba(255,215,0,.25) }
+  .inv-btn.primary:hover{ filter:brightness(0.95) }
+
+  .inv-stats{ display:flex; flex-wrap:wrap; gap:8px; align-content:flex-start; justify-content:flex-start }
+  .chip{
+    display:inline-flex; align-items:center; gap:6px; padding:8px 10px; border-radius:999px;
+    background:#0f1a1d; color:#ffeeb0; border:1px solid #334048; font-size:13px
+  }
+
+  /* ===== Banner Profético Dinâmico (i18n) ===== */
+  .banner-profetico{
+    position:relative; overflow:hidden;
+    background: linear-gradient(180deg, #fff4b8 0%, #ffe60022 100%);
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+  }
+  .banner-profetico .wrap{
+    max-width:1100px; margin:0 auto; padding:12px 14px;
+    display:flex; align-items:center; gap:10px; justify-content:center; flex-wrap:wrap;
+  }
+  .banner-profetico .icon{ font-size:20px }
+  .banner-profetico .msg{
+    position:relative; min-height:1.6em; color:var(--ink); font-weight:bold; text-align:center; flex: 1 1 520px;
+  }
+  .banner-profetico .msg span{
+    position:absolute; left:0; right:0;
+    opacity:0; transform:translateY(6px);
+    transition:opacity .4s ease, transform .4s ease;
+  }
+  .banner-profetico .msg span.active{ opacity:1; transform:translateY(0) }
+  .banner-profetico .ctrl{ display:flex; gap:8px; align-items:center; }
+  .banner-profetico button{
+    background:#fff; border:1px solid var(--line); color:var(--ink);
+    border-radius:10px; padding:6px 10px; font-weight:bold; cursor:pointer;
+  }
+  .banner-profetico button:hover{ background:var(--hover) }
+  .banner-profetico .ctrl select{
+    border:1px solid var(--line); border-radius:10px; padding:6px 8px; background:#fff; color:var(--ink);
+  }
+
+  .btn-gloria{
+    background: linear-gradient(90deg,#fff3b0,#ffd700,#fff3b0);
+    color:#3b2400 !important;
+    border-color:#e6c200 !important;
+    box-shadow:0 8px 22px rgba(255,215,0,.35);
+    font-weight:900;
+  }
+  .btn-gloria:hover{ filter:brightness(0.97); transform:translateY(-1px); }
   </style>
 </head>
 <body>
-  <h1>🚀 SAIH RPC Tester</h1>
-  <p class="sub">Genesis (pública) & Saihchain (privada) • Bitcoin & Ethereum • Presets + salvar preferências</p>
 
-  <!-- 🌍 Tradutor para todas as nações – Justiça do Altíssimo -->
-  <div id="google_translate_element" style="position:fixed; top:10px; right:10px; z-index:999;"></div>
+<a href="#conteudo" class="sr-only" onfocus="this.style.left='10px';this.style.width='auto';this.style.height='auto';">Pular para o conteúdo</a>
 
-  <!-- Toolbar / Presets -->
-  <div class="toolbar">
-    <div class="row">
-      <div>
-        <label>🌐 RPC URL</label>
-        <input id="rpcUrl" placeholder="ex.: https://genesis.saihgeness.com/eth"/>
-      </div>
-      <div>
-        <label>🔑 Basic Auth (user:password – só se precisar)</label>
-        <input id="auth" placeholder="usuario:senha"/>
-      </div>
-    </div>
-    <div class="row" style="margin-top:8px">
-      <select id="preset" onchange="applyPreset()" title="Escolha um endpoint pronto">
-        <option value="">— escolher preset —</option>
-        <option value="genesis-eth">Genesis (Pública) — ETH</option>
-        <option value="genesis-btc">Genesis (Pública) — BTC</option>
-        <option value="saihchain-eth">Saihchain (Privada) — ETH</option>
-        <option value="saihchain-btc">Saihchain (Privada) — BTC</option>
-      </select>
-      <button onclick="savePrefs()">💾 Salvar</button>
-      <button class="ghost" onclick="loadPrefs()">↩️ Restaurar</button>
-      <button class="ghost" onclick="clearPrefs()">🧹 Limpar</button>
-      <a href="explorer_saih_tester_decl_trilingue.pdf" target="_blank" style="text-decoration:none;">
-        <button class="ghost">📄 Declaração (PT/EN/FR)</button>
-      </a>
-    </div>
-    <p class="muted" style="margin-top:8px">Dica: para rede privada, preencha <b>Basic Auth</b> (user:pass). Se o navegador bloquear por CORS, use <b>Copiar curl</b> e teste no terminal.</p>
+<!-- Widget de Autenticação (Cognito) -->
+<div class="auth-widget" aria-live="polite">
+  <div class="state" id="login-state">Verificando sessão…</div>
+  <div>
+    <button class="btn" onclick="startLogin()">Entrar</button>
+    <button class="btn secondary" onclick="logout()">Sair</button>
   </div>
+</div>
 
-  <div class="grid">
-    <!-- ============ ETH CARDS ============ -->
-    <div class="card">
-      <div class="tag">Ethereum</div>
-      <h3 style="margin:8px 0 6px">eth_blockNumber</h3>
-      <pre id="payload-eth_blockNumber"></pre>
-      <div class="row">
-        <button onclick="sendRpc('eth_blockNumber')">Enviar</button>
-        <button class="ghost" onclick="copyCurl('eth_blockNumber')">Copiar curl</button>
-      </div>
-      <div class="result" id="res-eth_blockNumber"></div>
+<header>
+  <h1>Obra SAIH GENESS – Entrada Oficial</h1>
+  <p>“Levanta-te, resplandece, porque já vem a tua luz...” – Isaías 60:1</p>
+</header>
+
+<section class="banner-profetico" aria-labelledby="bp-title">
+  <div class="wrap">
+    <div class="icon" aria-hidden="true">✨</div>
+    <h2 id="bp-title" class="sr-only">Mensagens Proféticas</h2>
+    <div class="msg" aria-live="polite">
+      <span class="active">Carregando mensagens…</span>
     </div>
-
-    <div class="card">
-      <div class="tag">Ethereum</div>
-      <h3 style="margin:8px 0 6px">eth_chainId</h3>
-      <pre id="payload-eth_chainId"></pre>
-      <div class="row">
-        <button onclick="sendRpc('eth_chainId')">Enviar</button>
-        <button class="ghost" onclick="copyCurl('eth_chainId')">Copiar curl</button>
-      </div>
-      <div class="result" id="res-eth_chainId"></div>
-    </div>
-
-    <div class="card">
-      <div class="tag">Ethereum</div>
-      <h3 style="margin:8px 0 6px">eth_getBlockByNumber</h3>
-      <label>Número do bloco (hex ou palavras-chave: latest|earliest|pending)</label>
-      <input id="eth_blocknum" placeholder="ex.: latest ou 0x10FB78"/>
-      <pre id="payload-eth_getBlockByNumber"></pre>
-      <div class="row">
-        <button onclick="sendRpc('eth_getBlockByNumber')">Enviar</button>
-        <button class="ghost" onclick="copyCurl('eth_getBlockByNumber')">Copiar curl</button>
-      </div>
-      <div class="result" id="res-eth_getBlockByNumber"></div>
-    </div>
-
-    <div class="card">
-      <div class="tag">Ethereum</div>
-      <h3 style="margin:8px 0 6px">eth_getBalance</h3>
-      <label>Endereço</label>
-      <input id="eth_address" placeholder="0x..."/>
-      <label>Bloco (latest por padrão)</label>
-      <input id="eth_balance_block" placeholder="latest (ou 0xHEX)"/>
-      <pre id="payload-eth_getBalance"></pre>
-      <div class="row">
-        <button onclick="sendRpc('eth_getBalance')">Enviar</button>
-        <button class="ghost" onclick="copyCurl('eth_getBalance')">Copiar curl</button>
-      </div>
-      <div class="result" id="res-eth_getBalance"></div>
-    </div>
-
-    <!-- ============ BTC CARDS ============ -->
-    <div class="card">
-      <div class="tag">Bitcoin</div>
-      <h3 style="margin:8px 0 6px">getblockcount</h3>
-      <pre id="payload-btc_getblockcount"></pre>
-      <div class="row">
-        <button onclick="sendRpc('btc_getblockcount')">Enviar</button>
-        <button class="ghost" onclick="copyCurl('btc_getblockcount')">Copiar curl</button>
-      </div>
-      <div class="result" id="res-btc_getblockcount"></div>
-    </div>
-
-    <div class="card">
-      <div class="tag">Bitcoin</div>
-      <h3 style="margin:8px 0 6px">getbestblockhash</h3>
-      <pre id="payload-btc_getbestblockhash"></pre>
-      <div class="row">
-        <button onclick="sendRpc('btc_getbestblockhash')">Enviar</button>
-        <button class="ghost" onclick="copyCurl('btc_getbestblockhash')">Copiar curl</button>
-      </div>
-      <div class="result" id="res-btc_getbestblockhash"></div>
-    </div>
-
-    <div class="card">
-      <div class="tag">Bitcoin</div>
-      <h3 style="margin:8px 0 6px">getblock</h3>
-      <label>Block hash</label>
-      <input id="btc_blockhash" placeholder="000000..."/>
-      <pre id="payload-btc_getblock"></pre>
-      <div class="row">
-        <button onclick="sendRpc('btc_getblock')">Enviar</button>
-        <button class="ghost" onclick="copyCurl('btc_getblock')">Copiar curl</button>
-      </div>
-      <div class="result" id="res-btc_getblock"></div>
-    </div>
-
-    <div class="card">
-      <div class="tag">Bitcoin</div>
-      <h3 style="margin:8px 0 6px">getrawtransaction</h3>
-      <label>TXID</label>
-      <input id="btc_txid" placeholder="txid..."/>
-      <pre id="payload-btc_getrawtransaction"></pre>
-      <div class="row">
-        <button onclick="sendRpc('btc_getrawtransaction')">Enviar</button>
-        <button class="ghost" onclick="copyCurl('btc_getrawtransaction')">Copiar curl</button>
-      </div>
-      <div class="result" id="res-btc_getrawtransaction"></div>
+    <div class="ctrl" aria-label="Controles do banner">
+      <select id="bp-lang" aria-label="Idioma do banner" title="Idioma"></select>
+      <button type="button" id="bp-prev" aria-label="Anterior">◀</button>
+      <button type="button" id="bp-next" aria-label="Próxima">▶</button>
     </div>
   </div>
+</section>
+
+<!-- ===== MENU EM QUADRANTES ===== -->
+<nav aria-label="Navegação principal" class="menu-bar">
+  <!-- Academy (dropdown) -->
+  <div class="menu-dropdown">
+    <button class="menu-item" aria-haspopup="true" aria-expanded="false">🌱 SAIHGENESS Academy</button>
+    <div class="menu-panel" role="menu" aria-label="SAIHGENESS Academy">
+      <a role="menuitem" href="/educativo/index.html">🌱 SAIHGENESS Academy</a>
+      <a role="menuitem" href="menu_coros.html">🎵 Menú Coros</a>
+      <a role="menuitem" href="menu_musicos.html">🎼 Músicos e Levitas</a>
+      <a role="menuitem" href="/saihub/index.html" title="Portal dos Criadores (SAIHUB GENESIS)">✨ SAIHUB GENESIS</a>
+
+      <div class="menu-label">SAIHUB</div>
+      <a role="menuitem" href="/saihub/Hub_Principal_SAIHUB.html">🌐 Hub Principal</a>
+      <a role="menuitem" href="/saihub/painel/painel_index_with_oficina_start.html">📊 Painel do Criador</a>
+      <a role="menuitem" href="/saihub/tools/impacto/index.html">🧰 Oficina de Impacto</a>
+      <a role="menuitem" href="/saihub/diretrizes/infantil/index.html">🛡️ Proteção Infantil</a>
+      <a role="menuitem" href="/saihub/docs/index.html">📚 Documentos</a>
+      <a role="menuitem" href="/saihub/docs/SAIHUB_GENESIS_Explorer_RPC.html">⚙️ Guia RPC & Rede</a>
+      <a class="card-link" href="/academy/lideranca/index.html" title="Academy — Liderança & Rede"> 🧭 Academy — Liderança & Rede</a>
+      <a role="menuitem" href="/saihub/docs/Plano_Execucao_SAIHUB_GENESIS.html">📜 Plano de Execução</a>
+      <a role="menuitem" href="https://www.saihgeness.com/explorer.html" target="_blank" rel="noopener noreferrer">🔎 Explorer GENESIS</a>
+
+      <div class="menu-label">Outros</div>
+      <a role="menuitem" href="menu_letras.html">🔐 Letras Opção Trilingue</a>
+      <a role="menuitem" href="/academy/seguro-universal-de-vida/index.html">🛡️ Seguro Universal de Vida — Trilingue</a>
+    </div>
+  </div>
+
+  <!-- Sobre -->
+  <div class="menu-dropdown">
+    <button class="menu-item" aria-haspopup="true" aria-expanded="false">📘 Sobre</button>
+    <div class="menu-panel" role="menu">
+      <a href="fundamento.html">📖 Fundamento da Obra</a>
+      <a href="visao.html">👁️ Visão Profética</a>
+      <a href="missao.html">📜 Missão</a>
+      <a href="gloria.html">✨ Glória</a>
+      <a href="origem.html">🌍 Origem</a>
+      <a href="reino.html">👑 Reino</a>
+      <a href="alianca.html">🤝 Aliança Eterna</a>
+      <a href="/certificados/index.html">🏅 Certificados & Selos</a>
+    </div>
+  </div>
+
+  <!-- Ministério -->
+  <div class="menu-dropdown">
+    <button class="menu-item" aria-haspopup="true" aria-expanded="false">🛐 Ministério</button>
+    <div class="menu-panel" role="menu">
+      <a href="index_crown.html">👑 Trono & Glória — Coroa Viva</a>
+      <a href="/menu_registro_trono_gloria.html">📜 Registro Oficial — Trono & Glória</a>
+      <a href="ministerio_gloria.html">🕊️ Ministério A Glória do Senhor</a>
+      <a href="menu_registro_sword_justica.html" target="_blank" rel="noopener noreferrer">⚔️ Espada da Justiça Universal</a>
+      <a href="menu_registro_cura.html">💊 Cura Divina — DNA & Regeneração</a>
+      <a href="menu_registro_financas.html">💰 Finanças & Prosperidade</a>
+      <a href="menu_registro_amor.html">🌸 Amor & Paz Universal</a>
+      <a href="premiacoes.html">🏅 Premiações Universais</a>
+      <a href="anuncios.html">📢 Anúncios da Obra</a>
+    </div>
+  </div>
+
+  <!-- Justiça -->
+  <div class="menu-dropdown">
+    <button class="menu-item" aria-haspopup="true" aria-expanded="false">⚖️ Justiça</button>
+    <div class="menu-panel" role="menu">
+      <a href="menu_obra.html">Ir ao Menu da Obra</a>
+      <a href="ops.html">🔐 Código OPS</a>
+      <a href="rex.html">📜 REX – Revelação e Execução</a>
+      <a href="lux.html">🌟 LUX – Luz e Julgamento</a>
+      <a href="dom.html">👑 DOM – Governança e Liberação</a>
+      <a role="menuitem" href="/tools/set-document.html"> 🔏 Registrar Manifesto (Contrato)</a>
+      <a href="/justica/voc/index.html">📣 VOC — Voz, Ouvidoria & Conformidade</a>
+      <a href="/justica/voc/index.html">🛡️ Segurança & Incidentes</a>
+      <a href="/justica/voc/provas.html">📁 Registro de Provas</a>
+      <a href="/justica/voc/iocs.html">🧩 Consulta de IOCs</a>
+      <a href="/justica/voc/guias/preservacao.html">📦 Guia de Preservação</a>
+      <a href="alianca_nacoes.html">🤝 Aliança das Nações</a>
+      <a class="card-link" href="/manifestos/justica-celestial-divina/index.html" target="_blank" rel="noopener noreferrer">🔏 Justiça Celestial / Divina</a>
+      <a class="card-link" href="/justica/docs/chamado-autoridades.pdf" target="_blank" rel="noopener noreferrer">📬 Chamado às Autoridades (PDF)</a>
+    </div>
+  </div>
+
+  <!-- Tokens -->
+  <div class="menu-dropdown">
+    <button class="menu-item" aria-haspopup="true" aria-expanded="false">💰 Tokens</button>
+    <div class="menu-panel" role="menu">
+      <a href="index_atual_backup.html">🗂️ Versão Anterior (Backup)</a>
+      <a href="/portal/index.html">🏠 Início</a>
+      <a href="/portal/estatuto_bantu.html">📜 Estatuto</a>
+      <a href="tokens_espirituais.html">💎 Tokens Espirituais</a>
+      <a href="estatuto_bantu_index_final_2025_08_09.html">🏦 Banco BANTU</a>
+      <a href="menu_registro_network.html">🌐 NetworkNegócios</a>
+      <a href="menu_registro_investidor.html">🌎 Investidor Universal</a>
+      <a href="/portal/relatorios.html">📊 Relatórios</a>
+      <a href="impacto_nacoes.html">🌍 Painel por Nações</a>
+      <a href="/portal/contato.html">✉️ Contato</a>
+    </div>
+  </div>
+
+  <!-- Pesquisas Sagradas -->
+  <div class="menu-dropdown">
+    <button class="menu-item" aria-haspopup="true" aria-expanded="false">🔍 Pesquisas Sagradas</button>
+    <div class="menu-panel" role="menu">
+      <a href="/site/index_audio.html">🎙️ SAIH Scientific Search (Áudio)</a>
+      <a href="pesquisas_sagradas.html">📜 Página Pesquisas Sagradas</a>
+      <a href="explorer.html">🗂️ Explorer Gateway</a>
+    </div>
+  </div>
+
+  <!-- Acessos diretos -->
+  <a class="menu-item" href="https://www.saihgeness.com/rede-profetica/index.html" target="_blank" rel="noopener noreferrer">🌐 Rede Profética</a>
+  <a class="menu-item" href="documentos.html" data-auth="true">📂 Documentos Selados</a>
+  <a class="menu-item" href="explorer.html">🚪 Explorer Gateway</a>
+  <a class="menu-item" href="https://curadoria.saihgeness.com/saihub/Hub_Principal_SAIHUB.html" target="_blank" rel="noopener noreferrer">🎙️ Hub Principal SAIHUB</a>
+  <a class="menu-item" href="https://saihub.saihgeness.com/?utm_source=obra_main&amp;utm_medium=menu&amp;utm_campaign=saihub" target="_blank" rel="noopener noreferrer" aria-label="Abrir SAIHUB — Canal Público (nova aba)">👁 SAIHUB — Canal Público</a>
+  <a class="menu-item" href="https://explore.saihgeness.com/" target="_blank" rel="noopener noreferrer">🚀 Explorer SAIH TESTER</a>
+  <a class="menu-item" href="/manifesto-saih-gen.html" aria-label="Ir para o Índice Principal da Obra: Manifesto Saih & Gen" title="Índice Principal da Obra"> 🚀 <span>Manifesto Saih & Gen</span></a>
+  <a class="menu-item" href="/mapa-saih-interativo.html" aria-label="Ir para o Índice Principal da Obra: Mapa Saih" title="Índice Principal da Obra"> ⚖️ <span>Mapa Saih às Nações</span></a>
+  <a class="menu-item" href="/manifesto-de-justica.html" aria-label="Ir para o Índice Principal da Obra: Manifesto de Justiça às Nações" title="Índice Principal da Obra"> ⚖️ <span>Manifesto de Justiça às Nações</span></a>
+  <a class="menu-item" href="/index_principal.html" aria-label="Ir para o Índice Principal da Obra: Livro das Profecias das Nações" title="Índice Principal da Obra"> 📜 <span>Livro das Profecias das Nações</span></a>
+  <a class="menu-item"href="https://saihgeness.com/public/index_i18n.html"target="_blank" rel="noopener"aria-label="Explorer &amp; Blockchain"title="Explorer &amp; Blockchain">🦊 <span>Explorer &amp; Blockchain</span></a>
+  <a class="menu-item" href="/tools/genesis_guide.html"> 🌐 Rede Pública SAIHCHAIN-GENESIS</a>
+  <!-- Link SAIHCOIN corrigido -->
+  <a class="menu-item" role="menuitem" href="https://saihgeness.com/contracts/saihcoin/index.html" target="_blank" rel="noopener noreferrer">🪙 SAIHCOIN</a>
+
+  <!-- Admin -->
+  <a class="menu-item btn-gloria" href="javascript:void(0)" onclick="startLogin('/auth/callback/admin_index.html')">🛡️ Entrar (Admin)</a>
+</nav>
+
+<main id="conteudo">
+<section class="invest-hero" aria-labelledby="inv-title">
+  <div class="inv-wrap">
+    <div class="inv-copy">
+      <h2 id="inv-title">💎 Invista na Obra SAIH GENESS</h2>
+      <p>Transparência selada, justiça consagrada e impacto mensurável. Seus recursos tornam-se sementes de transformação sob a
+         Glória do Altíssimo.</p>
+      <div class="inv-ctas">
+        <a class="inv-btn primary" href="/menu_registro_investidor.html">🚀 Portal de Investidores</a>
+        <a class="inv-btn" href="/portal/relatorios.html">📊 Relatórios e Auditoria</a>
+        <a class="inv-btn" href="/portal/estatuto_bantu.html">📜 Estatuto</a>
+        <a class="inv-btn" href="/pitch/index.html" target="_blank" rel="noopener noreferrer">🎯 Pitch</a>
+      </div>
+    </div>
+
+    <div class="inv-stats" aria-label="Sinais de confiança">
+      <div class="chip"><span>🔐</span> Documentos Selados</div>
+      <div class="chip"><span>🧾</span> Hash público SHA-256</div>
+      <div class="chip"><span>🌍</span> Painel por Nações</div>
+      <div class="chip"><span>⚖️</span> Justiça • OPS / LUX / REX</div>
+    </div>
+  </div>
+</section>
+
+<section class="sec-pesquisas" aria-labelledby="idx-pesquisas-title">
+  <h2 id="idx-pesquisas-title">🔍 Índice — Pesquisas Sagradas</h2>
+  <p class="muted" style="margin:6px 0 14px; text-align:center; color:var(--muted)">Atalhos rápidos consagrados para busca e navegação.</p>
+  <div class="cards">
+    <a class="card-link" href="/site/index_audio.html">🎙️ SAIH Scientific Search (áudio)</a>
+    <a class="card-link" href="pesquisas_sagradas.html">📜 Página de Pesquisas Sagradas</a>
+    <a class="card-link" href="explorer.html">🗂️ Explorer Gateway</a>
+    <a class="card-link" href="https://scholar.google.com" target="_blank" rel="noopener noreferrer">🔎 Google Scholar</a>
+    <a class="card-link" href="https://arxiv.org" target="_blank" rel="noopener noreferrer">📄 arXiv</a>
+    <a class="card-link" href="https://pubmed.ncbi.nlm.nih.gov" target="_blank" rel="noopener noreferrer">🧬 PubMed</a>
+    <a class="card-link" href="/manifestos/manifesto-saih-geness/index.html" target="_blank" rel="noopener noreferrer">🔏 Manifesto SAIH GENESS</a>
+    <a class="card-link pitch" href="/pitch/index.html" target="_blank" rel="noopener noreferrer">🚀 Pitch / Investidores</a>
+  </div>
+</section>
+
+<div class="destacado">
+  <h2>📜 Palavra Selada: Isaías 60</h2>
+  <p>“E a glória do Senhor vai nascendo sobre ti.”</p>
+</div>
+
+<div class="destacado">
+  <h2>🔐 Rede SAIHCHAIN (Privada)</h2>
+  <p>Rede restrita e consagrada, operando sob princípios espirituais selados.</p>
+  <a href="https://saihchain.saihgeness.com" target="_blank" rel="noopener noreferrer">🌐 Acessar Rede Privada</a>
+</div>
+
+<div class="destacado">
+  <h2>🌍 Rede SAIHCHAIN-GENESIS (Pública)</h2>
+  <p>Rede pública universal para revelações, tokens e registros acessíveis globalmente.</p>
+  <a href="https://genesis.saihgeness.com" target="_blank" rel="noopener noreferrer">🌐 Acessar Rede Pública</a>
+</div>
+</main>
+
+<footer>Obra SAIH GENESS – Registrado para a Glória do Altíssimo</footer>
+
+<nav class="dock" aria-label="Barra de início — Portão Divino">
+  <a href="pesquisas_sagradas.html" class="dock-item"><span class="ico">🔍</span><span class="tx">Pesquisas</span></a>
+  <a href="rede_profetica.html" class="dock-item" data-auth="true"><span class="ico">🌐</span><span class="tx">Rede Profética</span></a>
+  <a href="documentos.html" class="dock-item" data-auth="true"><span class="ico">📂</span><span class="tx">Documentos</span></a>
+  <a href="/explorer/index.html" class="dock-item"><span class="ico">🚪</span><span class="tx">Explorer</span></a>
+</nav>
+
+<!-- Google Translate -->
+<style>
+  #google_translate_element{ position:fixed; top:10px; right:10px; z-index:9999; }
+  .goog-te-banner-frame { display:none !important; }
+  body { top:0 !important; }
+</style>
+<div id="google_translate_element" aria-label="Traduzir página"></div>
+<script>
+  function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+      pageLanguage: 'pt',
+      includedLanguages: 'af,am,ar,az,be,bg,bn,bs,ca,ceb,cs,cy,da,de,el,en,eo,es,et,eu,fa,fi,fr,ga,gl,gu,ha,haw,he,hi,hmn,hr,ht,hu,hy,id,ig,is,it,ja,jw,ka,kk,km,kn,ko,ku,ky,la,lb,lo,lt,lv,mg,mi,mk,ml,mn,mr,ms,mt,my,ne,nl,no,ny,pa,pl,ps,pt,ro,ru,rw,sd,si,sk,sl,sm,sn,so,sq,sr,st,su,sv,sw,ta,te,tg,th,tk,tl,tr,uk,ur,uz,vi,xh,yi,yo,zh-CN,zh-TW,zu',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+      autoDisplay: false
+    }, 'google_translate_element');
+  }
+</script>
+<script async src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 <script>
-/* ======= PRESETS ======= */
-const PRESETS = {
-  "genesis-eth":   "https://genesis.saihgeness.com/eth",
-  "genesis-btc":   "https://genesis.saihgeness.com/btc",
-  "saihchain-eth": "https://saihchain.saihgeness.com/eth",
-  "saihchain-btc": "https://saihchain.saihgeness.com/btc"
+const CFG = {
+  domain: "us-east-2izvc7suha.auth.us-east-2.amazoncognito.com",
+  clientId: "6vhelks7si8bhfr7ta1aidkctm",
+  redirectUri: "https://www.saihgeness.com/auth/callback/admin_index.html",
+  scope: "email openid phone",
+  responseType: "code"
 };
+const DEFAULT_NEXT = "/index_rede_profetica.html";
 
-function applyPreset(){
-  const p = document.getElementById('preset').value;
-  if(!p) return;
-  document.getElementById('rpcUrl').value = PRESETS[p] || "";
-  if(p.startsWith('saihchain')) document.getElementById('auth').focus();
-  renderPayloads();
-  savePrefs();
+const enc = v => encodeURIComponent(v);
+function decodeJwtSafe(t){
+  try{ const p=t.split('.')[1]; const j=atob(p.replace(/-/g,'+').replace(/_/g,'/'));
+       return JSON.parse(decodeURIComponent(escape(j))); }catch(e){ return {}; }
 }
-
-/* ======= Preferences (localStorage) ======= */
-function savePrefs(){
-  localStorage.setItem('saih_rpc_url',  document.getElementById('rpcUrl').value.trim());
-  localStorage.setItem('saih_rpc_auth', document.getElementById('auth').value.trim());
+function isExpired(idt){
+  try{ const {exp}=decodeJwtSafe(idt); return (Date.now()/1000) > (exp-60); }catch{ return true; }
 }
-function loadPrefs(){
-  document.getElementById('rpcUrl').value  = localStorage.getItem('saih_rpc_url')  || "";
-  document.getElementById('auth').value    = localStorage.getItem('saih_rpc_auth') || "";
-  renderPayloads();
+function b64url(bytes){
+  let s=btoa(String.fromCharCode(...bytes));
+  return s.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
-function clearPrefs(){
-  localStorage.removeItem('saih_rpc_url');
-  localStorage.removeItem('saih_rpc_auth');
-  document.getElementById('rpcUrl').value = "";
-  document.getElementById('auth').value   = "";
-  renderPayloads();
-}
-
-document.addEventListener('DOMContentLoaded', loadPrefs);
-
-/* ======= Build payloads dinamicamente ======= */
-function hexOrLatest(v){
-  const t = (v||'').trim();
-  return t ? t : 'latest';
-}
-
-function buildPayload(key){
-  switch(key){
-    // ETH
-    case 'eth_blockNumber':
-      return {jsonrpc:'2.0',method:'eth_blockNumber',params:[],id:1};
-    case 'eth_chainId':
-      return {jsonrpc:'2.0',method:'eth_chainId',params:[],id:1};
-    case 'eth_getBlockByNumber':{
-      const num = hexOrLatest(document.getElementById('eth_blocknum').value);
-      return {jsonrpc:'2.0',method:'eth_getBlockByNumber',params:[num,true],id:1};
-    }
-    case 'eth_getBalance':{
-      const addr = document.getElementById('eth_address').value.trim();
-      const blk  = hexOrLatest(document.getElementById('eth_balance_block').value||'latest');
-      return {jsonrpc:'2.0',method:'eth_getBalance',params:[addr, blk],id:1};
-    }
-
-    // BTC
-    case 'btc_getblockcount':
-      return {jsonrpc:'1.0',id:'web',method:'getblockcount',params:[]};
-    case 'btc_getbestblockhash':
-      return {jsonrpc:'1.0',id:'web',method:'getbestblockhash',params:[]};
-    case 'btc_getblock':{
-      const h = document.getElementById('btc_blockhash').value.trim();
-      return {jsonrpc:'1.0',id:'web',method:'getblock',params:[h,2]};
-    }
-    case 'btc_getrawtransaction':{
-      const tx = document.getElementById('btc_txid').value.trim();
-      return {jsonrpc:'1.0',id:'web',method:'getrawtransaction',params:[tx,true]};
-    }
+async function genPkce(){
+  const rand=crypto.getRandomValues(new Uint8Array(32));
+  const verifier=b64url(rand);
+  try{
+    const dig=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+    const challenge=b64url(new Uint8Array(dig));
+    return {verifier,challenge};
+  }catch(e){
+    return {verifier,challenge:verifier};
   }
 }
 
-function getAuthHeader(){
-  const a = document.getElementById('auth').value.trim();
-  return a ? { 'Authorization': 'Basic ' + btoa(a) } : {};
+async function startLogin(nextPath, requiredGroup){
+  const next = nextPath || DEFAULT_NEXT;
+  sessionStorage.setItem('post_login_redirect', next);
+  if(requiredGroup) sessionStorage.setItem('required_group', requiredGroup);
+
+  const {verifier,challenge} = await genPkce();
+  const state = b64url(crypto.getRandomValues(new Uint8Array(24)));
+  const nonce = b64url(crypto.getRandomValues(new Uint8Array(24)));
+  sessionStorage.setItem('pkce_verifier', verifier);
+  sessionStorage.setItem('oauth_state', state);
+  sessionStorage.setItem('oauth_nonce', nonce);
+
+  const url = `https://${CFG.domain}/login`
+    + `?client_id=${enc(CFG.clientId)}&redirect_uri=${enc(CFG.redirectUri)}`
+    + `&response_type=${enc(CFG.responseType)}&scope=${enc(CFG.scope)}`
+    + `&code_challenge_method=S256&code_challenge=${challenge}`
+    + `&state=${state}&nonce=${nonce}`;
+
+  window.location.replace(url);
 }
 
-function sendRpc(key){
-  const url = document.getElementById('rpcUrl').value.trim();
-  if(!url){ alert('Preencha a RPC URL primeiro.'); return; }
-  const payload = buildPayload(key);
-  // refletir payload nos <pre>
-  const pre = document.getElementById('payload-'+key.replace(/\./g,'_'));
-  if(pre) pre.textContent = JSON.stringify(payload,null,2);
+function logout(){
+  localStorage.clear(); sessionStorage.clear();
+  const logoutUrl = `https://${CFG.domain}/logout?client_id=${enc(CFG.clientId)}&logout_uri=${enc('https://www.saihgeness.com/')}`;
+  window.location.href = logoutUrl;
+}
 
-  fetch(url,{
-    method:'POST',
-    headers:{'Content-Type':'application/json', ...getAuthHeader()},
-    body: JSON.stringify(payload)
-  }).then(async r=>{
-    let txt = await r.text();
-    try{ const j = JSON.parse(txt); txt = JSON.stringify(j,null,2);}catch(e){}
-    document.getElementById('res-'+key.replace(/\./g,'_')).textContent = txt;
-  }).catch(err=>{
-    document.getElementById('res-'+key.replace(/\./g,'_')).textContent = 'Erro: '+err;
+function hasToken(){
+  const t = localStorage.getItem('id_token');
+  if(!t) return false;
+  return !isExpired(t);
+}
+
+function guardLinks(){
+  document.querySelectorAll('a[data-auth="true"]').forEach(a=>{
+    a.addEventListener('click', (e)=>{
+      if(!hasToken()){
+        e.preventDefault();
+        const next = a.getAttribute('href') || DEFAULT_NEXT;
+        startLogin(next);
+      }
+    });
   });
 }
 
-function copyCurl(key){
-  const url = document.getElementById('rpcUrl').value.trim() || '<COLOQUE-SUA-RPC>';
-  const auth = document.getElementById('auth').value.trim();
-  const payload = buildPayload(key);
-  let curl = `curl -X POST ${url} -H 'Content-Type: application/json' -d '${JSON.stringify(payload)}'`;
-  if(auth){ curl = `curl -u ${auth} -X POST ${url} -H 'Content-Type: application/json' -d '${JSON.stringify(payload)}'`; }
-  navigator.clipboard.writeText(curl);
-  alert('Comando curl copiado!');
-}
+document.addEventListener('DOMContentLoaded', guardLinks);
 
-function renderPayloads(){
-  const keys = ['eth_blockNumber','eth_chainId','eth_getBlockByNumber','eth_getBalance','btc_getblockcount','btc_getbestblockhash','btc_getblock','btc_getrawtransaction'];
-  keys.forEach(k=>{
-    const pre = document.getElementById('payload-'+k.replace(/\./g,'_'));
-    if(pre){ pre.textContent = JSON.stringify(buildPayload(k),null,2); }
+(function initAuthWidget(){
+  const stateEl  = document.getElementById('login-state');
+  const loginBtn = document.querySelector('.auth-widget .btn:not(.secondary)');
+  const outBtn   = document.querySelector('.auth-widget .btn.secondary');
+  if(!stateEl) return;
+
+  const idt = localStorage.getItem('id_token');
+  const verified = (localStorage.getItem('rp_verified') === '1');
+
+  if(idt && !isExpired(idt) && (verified || true)){
+    const c = decodeJwtSafe(idt);
+    stateEl.textContent = `Autenticado: ${c.name || c.email || 'membro'}`;
+    if(loginBtn) loginBtn.style.display = 'none';
+    if(outBtn)   outBtn.style.display   = 'inline-flex';
+  }else{
+    stateEl.textContent = 'Você não está autenticado.';
+    if(loginBtn) loginBtn.style.display = 'inline-flex';
+    if(outBtn)   outBtn.style.display   = 'none';
+  }
+})();
+
+// Dropdown acessível
+(function(){
+  const dds = document.querySelectorAll('.menu-dropdown');
+  dds.forEach(dd=>{
+    const btn = dd.querySelector('.menu-item');
+    const panel = dd.querySelector('.menu-panel');
+    if(!btn || !panel) return;
+
+    const close = ()=>{ dd.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); dd.classList.toggle('open');
+      btn.setAttribute('aria-expanded', dd.classList.contains('open')); });
+
+    document.addEventListener('click', (e)=>{ if(!dd.contains(e.target)) close(); });
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
   });
-}
+})();
 
-document.addEventListener('DOMContentLoaded', renderPayloads);
+// Banner Profético
+(function(){
+  const root = document.querySelector('.banner-profetico');
+  if(!root) return;
+
+  const msgBox = root.querySelector('.msg');
+  const prevBtn = root.querySelector('#bp-prev');
+  const nextBtn = root.querySelector('#bp-next');
+  const langSel = root.querySelector('#bp-lang');
+
+  const FALLBACK = {
+    intervalo_ms: 6000,
+    mensagens: {
+      pt: [
+        "Tudo pela Justiça do Altíssimo.",
+        "Levanta-te, resplandece — Isaías 60:1.",
+        "Nenhuma arma forjada prosperará — Isaías 54:17.",
+        "A glória do Senhor encherá as nações."
+      ],
+      en: [
+        "All for the Justice of the Most High.",
+        "Arise, shine — Isaiah 60:1.",
+        "No weapon formed shall prosper — Isaiah 54:17.",
+        "The Lord's glory will fill the nations."
+      ],
+      fr: [
+        "Tout pour la Justice du Très-Haut.",
+        "Lève‑toi, brille — Ésaïe 60:1.",
+        "Aucune arme forgée ne prospérera — Ésaïe 54:17.",
+        "La gloire du Seigneur remplira les nations."
+      ]
+    }
+  };
+
+  const urlLang = new URLSearchParams(location.search).get('lang');
+  const htmlLang = (document.documentElement.lang || '').slice(0,2).toLowerCase();
+  const navLang = (navigator.languages && navigator.languages[0] || navigator.language || 'pt').slice(0,2).toLowerCase();
+  let currentLang = (urlLang || localStorage.getItem('bp_lang') || htmlLang || navLang || 'pt').slice(0,2);
+
+  let allMsgs = FALLBACK.mensagens;
+  let intervalo = FALLBACK.intervalo_ms;
+  let spans = [];
+  let i = 0;
+  let timer = null;
+
+  function sanitize(arr){
+    const seen = new Set();
+    return (arr || []).map(x => (typeof x === 'string' ? x.trim() : ''))
+      .filter(x => x && !seen.has(x) && seen.add(x));
+  }
+
+  function renderMessages(arr){
+    msgBox.innerHTML = "";
+    arr.forEach((texto, idx)=>{
+      const s = document.createElement('span');
+      s.textContent = texto;
+      if(idx === 0) s.classList.add('active');
+      msgBox.appendChild(s);
+    });
+    return Array.from(msgBox.querySelectorAll('span'));
+  }
+
+  function getMessagesFor(lang){
+    if(allMsgs[lang] && allMsgs[lang].length) return sanitize(allMsgs[lang]);
+    if(allMsgs.pt && allMsgs.pt.length) return sanitize(allMsgs.pt);
+    const first = Object.keys(allMsgs).find(k => (allMsgs[k]||[]).length);
+    return sanitize(first ? allMsgs[first] : FALLBACK.mensagens.pt);
+  }
+
+  function populateLangSelector(){
+    const order = ['pt','en','fr'];
+    const langs = Object.keys(allMsgs);
+    langs.sort((a,b)=> (order.indexOf(a)+1 || 999) - (order.indexOf(b)+1 || 999) || a.localeCompare(b));
+    langSel.innerHTML = "";
+    langs.forEach(code=>{
+      const opt = document.createElement('option');
+      opt.value = code;
+      const labels = { pt:'Português', en:'English', fr:'Français' };
+      opt.textContent = labels[code] || code.toUpperCase();
+      langSel.appendChild(opt);
+    });
+    if(!langs.includes(currentLang)) currentLang = langs[0] || 'pt';
+    langSel.value = currentLang;
+  }
+
+  function show(idx){ spans.forEach((el, k)=> el.classList.toggle('active', k === idx)); }
+  function next(){ i = (i + 1) % spans.length; show(i); }
+  function prev(){ i = (i - 1 + spans.length) % spans.length; show(i); }
+  function restart(){
+    if(timer) clearInterval(timer);
+    const dur = Math.max(2000, Number(intervalo) || 6000);
+    timer = setInterval(next, dur);
+  }
+
+  function applyLanguage(lang){
+    currentLang = lang.slice(0,2).toLowerCase();
+    localStorage.setItem('bp_lang', currentLang);
+    const msgs = getMessagesFor(currentLang);
+    spans = renderMessages(msgs);
+    i = 0;
+    restart();
+  }
+
+  nextBtn?.addEventListener('click', ()=>{ next(); restart(); });
+  prevBtn?.addEventListener('click', ()=>{ prev(); restart(); });
+  root.addEventListener('mouseenter', ()=> timer && clearInterval(timer));
+  root.addEventListener('mouseleave', ()=> restart());
+  langSel?.addEventListener('change', (e)=> applyLanguage(e.target.value));
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ timer && clearInterval(timer); } });
+
+  populateLangSelector();
+  applyLanguage(currentLang);
+
+  fetch('/mensagens.json', { cache:'no-store' })
+    .then(r => r.ok ? r.json() : Promise.reject(new Error('http '+r.status)))
+    .then(data => {
+      if(data && data.mensagens && typeof data.mensagens === 'object'){
+        allMsgs = data.mensagens;
+      }
+      if(Number(data?.intervalo_ms) > 0) intervalo = Number(data.intervalo_ms);
+      populateLangSelector();
+      applyLanguage(currentLang);
+    })
+    .catch(()=>{ /* mantém fallback */ });
+})();
 </script>
-  
-  <!-- Google Translate (carregar no final do body) -->
-  <script>
-    function googleTranslateElementInit(){
-      new google.translate.TranslateElement({
-        pageLanguage: 'pt',
-        includedLanguages: 'af,am,ar,az,be,bg,bn,bs,ca,ceb,cs,cy,da,de,el,en,eo,es,et,eu,fa,fi,fr,ga,gl,gu,ha,haw,he,hi,hmn,hr,ht,hu,hy,id,ig,is,it,ja,jw,ka,kk,km,kn,ko,ku,ky,la,lb,lo,lt,lv,mg,mi,mk,ml,mn,mr,ms,mt,my,ne,nl,no,ny,pa,pl,ps,pt,ro,ru,rw,sd,si,sk,sl,sm,sn,so,sq,sr,st,su,sv,sw,ta,te,tg,th,tk,tl,tr,uk,ur,uz,vi,xh,yi,yo,zh-CN,zh-TW,zu',
-        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-      }, 'google_translate_element');
-    }
-  </script>
-  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>  
-  <!-- Reconhecimento de instrumentos/vasos usados -->
-  <div style="text-align:center;margin:28px auto 16px;max-width:900px;opacity:.95;line-height:1.6">
-    <div style="font-weight:700;color:#93c5fd;margin-bottom:6px;">Obra consagrada ao Criador do Universo</div>
-    <div style="font-size:.95rem;color:#cbd5e1;">
-      <b>Vasos usados nesta fase:</b>
-      ChatGPT (OpenAI) — Engenharia Virtual;
-      GitHub Pages — publicação estática;
-      AWS Route 53 — DNS;
-      <b>Google</b> (Domains &amp; Translate) — domínio e tradução;
-      <b>MetaMask</b> — integração web3 do ecossistema.
-    </div>
-  </div>
 
-  <!-- Links para PDFs selados -->
-  <div style="text-align:center;margin:32px 0 8px;opacity:.95">
-    📄 <a href="explorer_saih_tester_decl.pdf" target="_blank" style="color:#38bdf8;margin-right:12px;">Declaração Oficial (PT)</a>
-    •
-    🌐 <a href="explorer_saih_tester_decl_trilingue.pdf" target="_blank" style="color:#38bdf8;margin-left:12px;">Declaração Oficial (PT / EN / FR)</a>
-  </div>
-   <a href="SAIH_Certificate_of_Collaboration.pdf" target="_blank" style="text-decoration:none;">
-  <button class="ghost">📜 Certificado de Colaboração</button></a>
-  
-   <a href="Certificado_Colaboracao_Avancado_PT.pdf" target="_blank" style="text-decoration:none;">
-  <button class="ghost">📜 Certificado de Colaboração (Avançado)</button></a>
-
-  <p style="text-align:center;opacity:.6;font-size:.85rem;margin:0 0 24px;">Obra consagrada ao Criador do Universo • SAIH GENESS</p>
-
-  <!-- Google Translate (carregar no final do body) -->
-  <script>
-    function googleTranslateElementInit(){
-      new google.translate.TranslateElement({
-        pageLanguage: 'pt',
-        includedLanguages: 'af,am,ar,az,be,bg,bn,bs,ca,ceb,cs,cy,da,de,el,en,eo,es,et,eu,fa,fi,fr,ga,gl,gu,ha,haw,he,hi,hmn,hr,ht,hu,hy,id,ig,is,it,ja,jw,ka,kk,km,kn,ko,ku,ky,la,lb,lo,lt,lv,mg,mi,mk,ml,mn,mr,ms,mt,my,ne,nl,no,ny,pa,pl,ps,pt,ro,ru,rw,sd,si,sk,sl,sm,sn,so,sq,sr,st,su,sv,sw,ta,te,tg,th,tk,tl,tr,uk,ur,uz,vi,xh,yi,yo,zh-CN,zh-TW,zu',
-        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-      }, 'google_translate_element');
-    }
-  </script>
-  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>
